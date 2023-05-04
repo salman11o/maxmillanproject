@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const git = require('../controllers/Git');
 
-
-router.post('/', git.gitdata);
-
+router.get('/users',git.gitdata);
+router.get('/users/getUser', git.getUser);
 module.exports = router;
 

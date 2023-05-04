@@ -1,41 +1,82 @@
 const axios                     = require("axios");
-const dotenv                    = require("dotenv");
-dotenv.config();
 const token                     = process.env.AUTHORIZATION;
 const User                      = require("../models/User");
-
-
-module.exports.gitdata = async (req, res, next) => {
+const express = require("express");
+const db = require("../db/Connection");
+const fs=require('fs')
+exports.gitdata = async (req, res, data) => {
     try {
-            const resp = await axios.get("https://api.github.com/users", {
-                headers: {
-                    Authorization   : `token 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`,
-                },
-            });
-        if (resp)
-        {   
-             res.status(200).send({
-                Message: "Fetch Successful",
-                Data:resp.data    
-            })
+
+        const response = await axios.get("https://api.github.com/users");
+        const users = response.data;
+    const userObjects = users.map(user => new User({
+        login: user.login,
+        node_id:user.node_id,
+        avatar_url:user.avatar_url
+    }));
+ 
+        const result=await User.insertMany(userObjects);
+        if (result)
+        {
+            writedata(users);
+            return res.status(200).send({
+                Message: "Data Inserted Successfully",
+                Data:userObjects});
         }
-        else {
-             res.status(500).send({
-                Message: "Fetch Failed",
-                Data:resp.data    
-            })
-        }
-        return res;
+        else
+        {
+            return res.status(501).send({ Message: "Data Insertion Failed" });
+            }
         } catch (error) {
             return res.status(501).send({ Message: error.Message });
         }
 }
 
-module.exports.UserCreation = async(data) =>{
-    try {
-           
-    } catch (error) {
-        return res.status(500).send({ Message: error.Message });
+async function writedata(Users)
+{
+   const res=await fs.writeFile("C:\\Users\\Salman.Hassan\\Desktop\\Remote.JSON", JSON.stringify(Users), (err) => {
+  if (err) throw err;
+  console.log("Array written to file!");
+   });
+    
+}
+
+exports.getUser = async (req, res) => {
+    try
+    {
+        const arg = req.body.user.login;
+        let resp=await getUserData("C:\\Users\\Salman.Hassan\\Desktop\\Remote.JSON", arg);
+        console.log(resp);
+        if (resp)
+        {
+            return res.status(200).send({
+                Message: "User Found",
+                Data:resp
+            })
+        }
+        else {
+            return res.status(401).send({Message: "User Not Found",
+                Data:resp})
+        }
+    }
+    catch (err)
+    {
+        return res.status(501).send({ Message: err.Message });
     }
 }
+
+function getUserData(FileName, userLogin)
+{   
+   return new Promise((resolve, reject) => {
+        let foundUser = null;
+        console.log(userLogin);
+        fs.readFile(FileName, "utf-8", (err, data) => {
+        if (err) reject(err);
+    
+        const users = JSON.parse(data);
+            foundUser = users.find((user) => JSON.stringify(user.login) === JSON.stringify(userLogin));
+            resolve(foundUser);
+      });
+    })
+} 
 
