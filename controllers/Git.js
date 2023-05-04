@@ -46,7 +46,6 @@ exports.getUser = async (req, res) => {
     {
         const arg = req.body.user.login;
         let resp=await getUserData("C:\\Users\\Salman.Hassan\\Desktop\\Remote.JSON", arg);
-        console.log(resp);
         if (resp)
         {
             return res.status(200).send({
@@ -69,7 +68,6 @@ function getUserData(FileName, userLogin)
 {   
    return new Promise((resolve, reject) => {
         let foundUser = null;
-        console.log(userLogin);
         fs.readFile(FileName, "utf-8", (err, data) => {
         if (err) reject(err);
     
