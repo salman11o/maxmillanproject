@@ -3,7 +3,9 @@ const token                     = process.env.AUTHORIZATION;
 const User                      = require("../models/User");
 const express = require("express");
 const db = require("../db/Connection");
-const fs=require('fs')
+const fs = require('fs');
+const shorid = require('shortid');
+const shortid = require("shortid");
 exports.gitdata = async (req, res, data) => {
     try {
 
@@ -74,3 +76,53 @@ function getUserData(FileName, userLogin)
     return foundUser;
 } 
 
+exports.getApiKey = async (req, res) =>
+{
+    try {
+        const arg = req.body.user.login;
+        let resp= getUserData("C:\\Users\\Salman.Hassan\\Desktop\\Remote.JSON", arg);
+        if (resp)
+        {
+            //const apiKey = createShortId("C:\\Users\\Salman.Hassan\\Desktop\\ApiKeys.txt");
+            const Apikey = await createApiKey("C:\\Users\\Salman.Hassan\\Desktop\\ApiKeys.txt");
+            
+            res.setHeader("api-x-key", Apikey);
+            return res.status(200).send({
+                Message: "User Found",
+                Data:resp,
+                Apikey: Apikey,
+            })
+        }
+        else {
+            return res.status(401).send({
+                Message: "User Not Found",
+                Data: resp,
+                Apikey: Apikey,
+                apiKey:apiKey
+            })
+        }
+    }
+    catch (err)
+    {
+        return res.status(501).send({ Message: err.Message });
+    }
+    }
+function createShortId(file)
+{
+    const apiKey = shortid.generate()+"\n";
+    fs.writeFileSync(file, apiKey, {
+        flag:'a'
+    });
+    return apiKey;
+}
+
+async function createApiKey(file)
+{
+    return new Promise((resolve, reject) => {
+        const apiKey = shortid.generate() + "\n";
+        fs.appendFile(file, apiKey, (data, err) => {
+            if (err) reject(err);
+            resolve(apiKey);
+        });
+    })
+}
