@@ -2,7 +2,6 @@ const fs = require('fs');
 
 exports.verify = (req, res, next) => {
     const apikey = req.params.apikey;
-    console.log(apikey);
     if (!apikey) {
         return res.status(401).json({
             status: 401,
@@ -16,7 +15,6 @@ exports.verify = (req, res, next) => {
             next();
         }
         else {
-            console.log(`Not Found "${apikey}" in the file.`);
             return res.status(403).send({ Message: `Not Found "${apikey}" in the file.` });
         }
     }
