@@ -1,9 +1,11 @@
 const fs = require('fs');
 const header=`api-x-header`
 exports.verify = (req, res, next) => {
+    
     const apikey = req.headers[header];
     const apikeyquery = req.query.apikey;
     const apikeyparams = req.params.apikey;
+
     if (!apikey) {
         return res.status(401).json({
             status: 401,
